@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>UserServiceTest.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">UserServiceTest (Mar 16, 2024 4:49:54 PM)</a> &gt; <a href="../../index.html" class="el_group">userService</a> &gt; <a href="../index.html" class="el_bundle">src/test/java</a> &gt; <a href="index.source.html" class="el_package">fadili.mostafa.userService.service</a> &gt; <span class="el_source">UserServiceTest.java</span></div><h1>UserServiceTest.java</h1><pre class="source lang-java linenums">package fadili.mostafa.userService.service;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import fadili.mostafa.userService.dao.UserRepository;
+import fadili.mostafa.userService.exception.EmailNotificationServiceException;
+import fadili.mostafa.userService.exception.UserServiceException;
+import fadili.mostafa.userService.model.User;
+
+@ExtendWith(MockitoExtension.class)
+<span class="fc" id="L19">public class UserServiceTest {</span>
+	
+	@InjectMocks
+	UserServiceImpl userService;
+	
+	@Mock
+	UserRepository userRepository;
+	
+	@Mock
+	EmailVerificationServiceImpl emailVerificationService;
+	
+	String lastName;
+	String email;
+	String password;
+	String repeatedPassword;
+	
+	@BeforeEach
+	void init() {
+		
+<span class="fc" id="L38">		lastName = &quot;fadili&quot;;</span>
+<span class="fc" id="L39">		email = &quot;mostafa@gmail.com&quot;;</span>
+<span class="fc" id="L40">		password = &quot;1234&quot;;</span>
+<span class="fc" id="L41">		repeatedPassword = &quot;1234&quot;;</span>
+<span class="fc" id="L42">	}</span>
+
+	@DisplayName(&quot;user creation&quot;)
+	@Test
+	void testCreateUser_whenUserDetailsisProvided_returnUserObject() {
+		
+		//given
+<span class="fc" id="L49">		String firsName = &quot;mostafa&quot;;</span>
+<span class="fc" id="L50">		Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(true);</span>
+		
+		//when
+<span class="fc" id="L53">		User user = userService.createUser(firsName, lastName, email, password, repeatedPassword);</span>
+		
+		//then
+<span class="fc" id="L56">		Assertions.assertNotNull(user, &quot;user shouldn't be null&quot;);</span>
+<span class="fc" id="L57">		Assertions.assertEquals(firsName, user.getFirstName(), &quot;user firstName is incorrect&quot;);</span>
+<span class="fc" id="L58">		Assertions.assertEquals(lastName, user.getLastName(), &quot;user lastName is incorrect&quot;);</span>
+<span class="fc" id="L59">		Assertions.assertEquals(email, user.getEmail(), &quot;user email is incorrect&quot;);</span>
+<span class="fc" id="L60">		Assertions.assertNotNull(user.getId(), &quot;user should have contained an id&quot;);</span>
+<span class="fc" id="L61">		Mockito.verify(userRepository, Mockito.times(1))</span>
+<span class="fc" id="L62">			.save(Mockito.any(User.class));</span>
+<span class="fc" id="L63">		Mockito.verify(userRepository, Mockito.atLeast(1))</span>
+<span class="fc" id="L64">			.save(Mockito.any(User.class));</span>
+<span class="fc" id="L65">	}</span>
+	
+	@DisplayName(&quot;empty firstName causes IllegalArgException&quot;)
+	@Test
+	void testCreateUser_whenFirstNameEmpty_throwIllegalArgException() {
+		
+		//given
+<span class="fc" id="L72">		String firsName = &quot;mostafa&quot;;</span>
+<span class="fc" id="L73">		String lastName = &quot;&quot;;</span>
+<span class="fc" id="L74">		String expectedExceptionMessage = &quot;lastName shouldn't be null&quot;;</span>
+		
+		//when and then
+<span class="fc" id="L77">		IllegalArgumentException illegalArgumentException = Assertions.assertThrows(IllegalArgumentException.class, </span>
+<span class="pc" id="L78">				() -&gt; userService.createUser(firsName, lastName, email, password, repeatedPassword),</span>
+<span class="fc" id="L79">				&quot;empty lastName should have caused IllegalArgumentException&quot;);</span>
+		
+<span class="fc" id="L81">		Assertions.assertEquals(expectedExceptionMessage,</span>
+<span class="fc" id="L82">				illegalArgumentException.getMessage(),</span>
+<span class="fc" id="L83">				&quot;error message is incorrect&quot;);</span>
+<span class="fc" id="L84">	}</span>
+	
+	@Test
+	void testCreateUser_whenLastNameEmpty_throwIllegalArgException() {
+		
+		
+<span class="fc" id="L90">	}</span>
+	
+	@DisplayName(&quot;if save() method throws RuntimeException, a UserServiceException should be thrown&quot;)
+	@Test
+	void testCreateUser_whenSaveMethodThrowsException_thenThrowUserServiceException() {
+		
+		//given
+<span class="fc" id="L97">		Mockito.when(userRepository.save(Mockito.any(User.class))).thenThrow(RuntimeException.class);</span>
+<span class="fc" id="L98">		String firstName = &quot;mostafa&quot;;</span>
+		
+		
+		//when and then
+<span class="fc" id="L102">		Assertions.assertThrows(UserServiceException.class,</span>
+<span class="pc" id="L103">					() -&gt; userService.createUser(firstName, lastName, email,</span>
+<span class="pc" id="L104">											password, repeatedPassword),</span>
+<span class="fc" id="L105">					&quot;UserServiceException should have been thrown&quot;);</span>
+		
+<span class="fc" id="L107">	}</span>
+	
+	@Test
+	void testCreateUser_whenScheduleEmailVerificationThrowsExc_thenThrowUserServiceException() {
+		
+		//given
+<span class="fc" id="L113">		Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(true);</span>
+		//Mockito.when(emailVerificationService.scheduleEmailConfirmation(Mockito.any(User.class))).thenThrow(); doesn't work
+<span class="fc" id="L115">		Mockito.doThrow(EmailNotificationServiceException.class)</span>
+<span class="fc" id="L116">			.when(emailVerificationService)</span>
+<span class="fc" id="L117">			.scheduleEmailConfirmation(Mockito.any(User.class));</span>
+		
+		/*Mockito.doNothing().when(emailVerificationService)
+			.scheduleEmailConfirmation(Mockito.any(User.class));*/
+		
+<span class="fc" id="L122">		String firstName = &quot;mostafa&quot;;</span>
+		
+		//when and then
+<span class="fc" id="L125">		Assertions.assertThrows(UserServiceException.class,</span>
+<span class="pc" id="L126">					() -&gt; userService.createUser(firstName, lastName, email,</span>
+<span class="pc" id="L127">							password, repeatedPassword),</span>
+<span class="fc" id="L128">					&quot;UserServiceException should have been thrown&quot;);</span>
+		
+<span class="fc" id="L130">		Mockito.verify(emailVerificationService, Mockito.times(1))</span>
+<span class="fc" id="L131">			.scheduleEmailConfirmation(Mockito.any(User.class));;</span>
+<span class="fc" id="L132">	}</span>
+	
+	@Test
+	void testCreateUser_whenCreate_thenCallRealMethod() {
+		
+		//given
+<span class="fc" id="L138">		Mockito.when(userRepository.save(Mockito.any(User.class))).thenReturn(true);</span>
+		
+<span class="fc" id="L140">		Mockito.doCallRealMethod()</span>
+<span class="fc" id="L141">			.when(emailVerificationService)</span>
+<span class="fc" id="L142">			.scheduleEmailConfirmation(Mockito.any(User.class));</span>
+		
+<span class="fc" id="L144">		String firstName = &quot;mostafa&quot;;</span>
+		
+		//when
+<span class="fc" id="L147">		userService.createUser(firstName, lastName, email, password, repeatedPassword);</span>
+		
+		//then
+<span class="fc" id="L150">		Mockito.verify(emailVerificationService, Mockito.times(1))</span>
+<span class="fc" id="L151">			.scheduleEmailConfirmation(Mockito.any(User.class));</span>
+<span class="fc" id="L152">	}</span>
+	
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span>UserServiceTest (Mar 16, 2024 4:49:54 PM)</div></body></html>

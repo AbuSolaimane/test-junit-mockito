@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>UserServiceImpl.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">UserServiceTest (Mar 16, 2024 4:49:54 PM)</a> &gt; <a href="../../index.html" class="el_group">userService</a> &gt; <a href="../index.html" class="el_bundle">src/main/java</a> &gt; <a href="index.source.html" class="el_package">fadili.mostafa.userService.service</a> &gt; <span class="el_source">UserServiceImpl.java</span></div><h1>UserServiceImpl.java</h1><pre class="source lang-java linenums">package fadili.mostafa.userService.service;
+
+import java.util.UUID;
+
+import fadili.mostafa.userService.dao.UserRepository;
+import fadili.mostafa.userService.exception.UserServiceException;
+import fadili.mostafa.userService.model.User;
+
+public class UserServiceImpl implements UserService {
+	
+	private final UserRepository userRepository;
+	private final EmailVerificationService emailVerificationService;
+	
+	public UserServiceImpl(UserRepository userRepository, EmailVerificationService emailVerificationService) {
+<span class="fc" id="L15">		super();</span>
+<span class="fc" id="L16">		this.userRepository = userRepository;</span>
+<span class="fc" id="L17">		this.emailVerificationService = emailVerificationService;</span>
+<span class="fc" id="L18">	}</span>
+
+	@Override
+	public User createUser(String firsName, String lastName,
+			String email, String password, String repeatedPassword) {
+		
+<span class="pc bpc" id="L24" title="2 of 4 branches missed.">		if (firsName == null || firsName.length() == 0)</span>
+<span class="nc" id="L25">			throw new IllegalArgumentException(&quot;firstName shouldn't be null&quot;);</span>
+		
+<span class="pc bpc" id="L27" title="1 of 4 branches missed.">		if (lastName == null || lastName.length() == 0)</span>
+<span class="fc" id="L28">			throw new IllegalArgumentException(&quot;lastName shouldn't be null&quot;);</span>
+		
+<span class="fc" id="L30">		User user = new User(UUID.randomUUID().toString(), firsName, lastName, email);</span>
+		
+		boolean isUserCreated;
+		try {
+<span class="fc" id="L34">			isUserCreated = userRepository.save(user);</span>
+<span class="fc" id="L35">		} catch (RuntimeException ex) {</span>
+			
+<span class="fc" id="L37">			throw new UserServiceException(ex.getMessage());</span>
+		}
+		
+<span class="pc bpc" id="L40" title="1 of 2 branches missed.">		if (!isUserCreated) {</span>
+<span class="nc" id="L41">			throw new UserServiceException(&quot;you couldn't create the user&quot;);</span>
+		}
+		
+		try {
+<span class="fc" id="L45">			emailVerificationService.scheduleEmailConfirmation(user);</span>
+<span class="fc" id="L46">		} catch (RuntimeException ex) {</span>
+			
+<span class="fc" id="L48">			throw new UserServiceException(ex.getMessage());</span>
+		}
+		
+<span class="fc" id="L51">		return user;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span>UserServiceTest (Mar 16, 2024 4:49:54 PM)</div></body></html>
